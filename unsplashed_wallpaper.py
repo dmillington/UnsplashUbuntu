@@ -15,10 +15,6 @@ except ImportError:
 class UnsplashedWallpaper(object):
 
     def __init__(self):
-        self.my_screen = tk.Tk()
-        self.screen_width = self.my_screen.winfo_screenwidth()
-        self.screen_height = self.my_screen.winfo_screenheight()
-        self.res = "/"+str(self.screen_width)+"x"+str(self.screen_height)
         self.cwd = os.getcwd()
         self.file_name = "unsplash_wallpaper.png"
 
@@ -27,18 +23,18 @@ class UnsplashedWallpaper(object):
         j = r.json()
         return ", ".join([j['city'], j['region']])
 
-    def get_wallpaper(self, location):
+    def get_wallpaper(self, location, width, height):
         try:
             r = requests.get("https://api.unsplash.com/photos/random",
                 params={
                 'client_id': client_id,
                 'query': location,
-                'w': self.screen_width,
-                'h': self.screen_height,
+                'w': width,
+                'h': height,
             })
             j = r.json()
             r = requests.get(j['urls']['custom'])
-            with open("unsplash_wallpaper.png", 'wb') as f:
+            with open(self.file_name, 'wb') as f:
                 f.write(r.content)
         except:
             print "Exception"
@@ -65,6 +61,9 @@ class UnsplashedWallpaper(object):
 
 if __name__ == "__main__":
     interval = 3600
+    my_screen = tk.Tk()
+    screen_width = my_screen.winfo_screenwidth()
+    screen_height = my_screen.winfo_screenheight()
     uw = UnsplashedWallpaper()
     while True:
         sleep_time = interval/60
@@ -72,7 +71,7 @@ if __name__ == "__main__":
             print "Getting new wallpaper..."
             uw.remove_wallpaper()
             location = uw.get_location()
-            uw.get_wallpaper(location)
+            uw.get_wallpaper(location, screen_width, screen_height)
             uw.set_wallpaper()
             sleep_time = interval
         for _ in xrange(sleep_time):
