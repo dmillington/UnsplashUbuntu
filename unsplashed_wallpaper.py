@@ -23,7 +23,7 @@ class UnsplashedWallpaper(object):
         j = r.json()
         return ", ".join([j['city'], j['region']])
 
-    def get_wallpaper(self, location, width, height):
+    def get_wallpaper(self, location, width, height, write_to_file=False):
         try:
             r = requests.get("https://api.unsplash.com/photos/random",
                 params={
@@ -33,9 +33,16 @@ class UnsplashedWallpaper(object):
                 'h': height,
             })
             j = r.json()
+
+            # return URL, if we're not writing to local disk
+            if write_to_file == False:
+                return j['urls']['custom']
+
             r = requests.get(j['urls']['custom'])
             with open(self.file_name, 'wb') as f:
                 f.write(r.content)
+
+            return None
         except:
             print "Exception"
 
@@ -71,7 +78,7 @@ if __name__ == "__main__":
             print "Getting new wallpaper..."
             uw.remove_wallpaper()
             location = uw.get_location()
-            uw.get_wallpaper(location, screen_width, screen_height)
+            uw.get_wallpaper(location, screen_width, screen_height, write_to_file=True)
             uw.set_wallpaper()
             sleep_time = interval
         for _ in xrange(sleep_time):

@@ -19,3 +19,9 @@ Note: This assumes you're using Gnome, as that's the desktop manager utility tha
     3. Run the program: `./unsplashubuntu.py`
 
 4. (optional) Add the program on startup by going into launcher->startup applications
+
+## Running the Web server (locally)
+run with threading enabled from the root directory:
+FLASK_APP=web/app.py flask run --with-threads
+
+Then visit http://localhost:5000
