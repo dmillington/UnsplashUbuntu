@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from unsplashed_wallpaper import UnsplashedWallpaper
 
 app = Flask(__name__)
@@ -14,5 +14,7 @@ def get_wallpaper():
    # TODO: Get IP and pass it in as a parameter
    # uw.get_location()
    # FOR NOW:... just give back the image URL to display
-   url = uw.get_wallpaper("San Francisco, California", 1000, 1000)
+   width = request.args.get("width", 1000)
+   height = request.args.get("height", 1000)
+   url = uw.get_wallpaper("San Francisco, California", width, height)
    return url

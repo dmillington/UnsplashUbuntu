@@ -3,7 +3,7 @@ $(window).on('load', function () {
     method: 'GET'
   }
 
-  fetch("/get_wallpaper", obj)
+  fetch("/get_wallpaper?width=" + window.screen.width + "&height=" + window.screen.height , obj)
   .then(function(response) {
     return response.text();
   }).then(function(wallpaper_url) {
