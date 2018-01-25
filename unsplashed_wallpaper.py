@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import os
-import Tkinter as tk
 import time
 import urllib2
 import requests
@@ -67,6 +66,7 @@ class UnsplashedWallpaper(object):
         return False
 
 if __name__ == "__main__":
+    import Tkinter as tk
     interval = 3600
     my_screen = tk.Tk()
     screen_width = my_screen.winfo_screenwidth()
