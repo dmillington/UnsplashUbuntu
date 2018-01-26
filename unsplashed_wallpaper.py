@@ -17,10 +17,16 @@ class UnsplashedWallpaper(object):
         self.cwd = os.getcwd()
         self.file_name = "unsplash_wallpaper.png"
 
-    def get_location(self):
-        r = requests.get("http://ipinfo.io/json")
+    def get_location(self, ip=None):
+        if ip:
+            r = requests.get("http://ipinfo.io/%s/json" % (ip))
+        else:
+            r = requests.get("http://ipinfo.io/json")
         j = r.json()
-        return ", ".join([j['city'], j['region']])
+        if j['bogon']:
+            return None
+        else:
+            return ", ".join([j['city'], j['region']])
 
     def get_wallpaper(self, location, width, height, write_to_file=False):
         try:
