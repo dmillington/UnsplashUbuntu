@@ -5,9 +5,10 @@ $(window).on('load', function () {
 
   fetch("/get_wallpaper?width=" + window.screen.width + "&height=" + window.screen.height , obj)
   .then(function(response) {
-    return response.text();
-  }).then(function(wallpaper_url) {
-      $('#wallpaper_div').prepend('<img id="theImg" src="' + wallpaper_url + '" />');
+    return response.json();
+  }).then(function(wallpaper_json) {
+      $('#wallpaper_div').html('Photo taken by: ' + wallpaper_json['name']);
+      $('#wallpaper_div').append('<img id="theImg" src="' + wallpaper_json['url'] + '" />');
   })
   .catch(function() {
     console.log("Something went wrong!");

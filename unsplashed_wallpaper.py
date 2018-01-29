@@ -39,9 +39,13 @@ class UnsplashedWallpaper(object):
             })
             j = r.json()
 
-            # return URL, if we're not writing to local disk
+            # return json, if we're not writing to local disk
             if write_to_file == False:
-                return j['urls']['custom']
+                return {'url': j['urls']['custom'],
+                        'username': j['user']['username'],
+                        'name': j['user']['name'],
+                        'location': j['user']['location'],
+                }
 
             r = requests.get(j['urls']['custom'])
             with open(self.file_name, 'wb') as f:

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, jsonify, render_template, request
 from unsplashed_wallpaper import UnsplashedWallpaper
 
 app = Flask(__name__)
@@ -22,5 +22,5 @@ def get_wallpaper():
 
     width = request.args.get("width", 1000)
     height = request.args.get("height", 1000)
-    url = uw.get_wallpaper(DEFAULT_LOCATION, width, height)
-    return url
+    wallpaper = uw.get_wallpaper(DEFAULT_LOCATION, width, height)
+    return jsonify(wallpaper)
