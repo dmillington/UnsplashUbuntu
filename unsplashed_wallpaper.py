@@ -5,12 +5,6 @@ import time
 import urllib2
 import requests
 
-# The unsplash client_id parameter is read from here
-try:
-    from settings_secret import *
-except ImportError:
-    pass
-
 class UnsplashedWallpaper(object):
 
     def __init__(self):
@@ -26,28 +20,17 @@ class UnsplashedWallpaper(object):
         if j['bogon']:
             return None
         else:
-            return ", ".join([j['city'], j['region']])
+            return ",".join([j['city'], j['region']])
 
     def get_wallpaper(self, location, width, height, write_to_file=False):
         try:
-            r = requests.get("https://api.unsplash.com/photos/random",
-                params={
-                'client_id': client_id,
-                'query': location,
-                'w': width,
-                'h': height,
-            })
-            j = r.json()
+            request_url = "https://source.unsplash.com/%sx%s/?%s" % (width, height, location)
 
             # return json, if we're not writing to local disk
             if write_to_file == False:
-                return {'url': j['urls']['custom'],
-                        'username': j['user']['username'],
-                        'name': j['user']['name'],
-                        'location': j['user']['location'],
-                }
+                return {'url': request_url}
 
-            r = requests.get(j['urls']['custom'])
+            r = requests.get(request_url)
             with open(self.file_name, 'wb') as f:
                 f.write(r.content)
 

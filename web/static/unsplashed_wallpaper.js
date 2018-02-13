@@ -7,7 +7,7 @@ $(window).on('load', function () {
   .then(function(response) {
     return response.json();
   }).then(function(wallpaper_json) {
-      $('#wallpaper_div').html('Photo taken by: ' + wallpaper_json['name'] + ' on <a href="https://unsplash.com">Unsplash.com</a>');
+      $('#wallpaper_div').html('Photo based on your location and provided by <a href="https://unsplash.com">Unsplash.com</a>');
       $('#wallpaper_div').append('<br/><img id="theImg" style="max-height: 1000px; max-width: 1000px;" src="' + wallpaper_json['url'] + '" />');
   })
   .catch(function() {

@@ -4,7 +4,7 @@ from unsplashed_wallpaper import UnsplashedWallpaper
 app = Flask(__name__)
 app.config.from_object('web.config')
 
-DEFAULT_LOCATION="San Francisco, California"
+DEFAULT_LOCATION="San Francisco,California"
 
 @app.route("/")
 def index():
