@@ -2,8 +2,8 @@
 
 import os
 import time
-import urllib2
 import requests
+from requests.exceptions import ConnectionError, Timeout
 
 class UnsplashedWallpaper(object):
 
@@ -17,7 +17,7 @@ class UnsplashedWallpaper(object):
         else:
             r = requests.get("http://ipinfo.io/json")
         j = r.json()
-        if j['bogon']:
+        if 'bogon' in j and j['bogon']:
             return None
         else:
             return ",".join([j['city'], j['region']])
@@ -52,9 +52,9 @@ class UnsplashedWallpaper(object):
 
     def check_network(self):
         try:
-            res=urllib2.urlopen('http://www.google.com',timeout=1)
+            requests.get('http://www.google.com',timeout=1)
             return True
-        except urllib2.URLError as err:
+        except (ConnectionError, Timeout) as err:
             pass
         return False
 
