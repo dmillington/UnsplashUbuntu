@@ -1,15 +1,26 @@
 #!/usr/bin/env python
 
 import os
+import sys
 import time
+import threading
+import signal
 import requests
+import gi
+gi.require_version('Gtk', '3.0')
+gi.require_version('AppIndicator3', '0.1')
+from gi.repository import Gtk, AppIndicator3
 from requests.exceptions import ConnectionError, Timeout
+
+curr_path = os.path.dirname(os.path.realpath(__file__))
+APPINDICATOR_ID = 'myappindicator'
 
 class UnsplashedWallpaper(object):
 
     def __init__(self):
         self.cwd = os.getcwd()
         self.file_name = "unsplash_wallpaper.png"
+        self.change_now = False
 
     def get_location(self, ip=None):
         if ip:
@@ -58,13 +69,29 @@ class UnsplashedWallpaper(object):
             pass
         return False
 
-if __name__ == "__main__":
+    def should_change_now(self):
+        return self.change_now
+
+    def reset_change_now(self):
+        self.change_now = False
+
+    def set_change_now(self):
+        self.change_now = True
+
+class MenuHandler:
+    def menu_change_wallpaper(self, *args):
+        uw.set_change_now()
+
+    def menu_quit(self, *args):
+        Gtk.main_quit()
+
+def unsplashed_thread():
     import Tkinter as tk
     interval = 3600
     my_screen = tk.Tk()
     screen_width = my_screen.winfo_screenwidth()
     screen_height = my_screen.winfo_screenheight()
-    uw = UnsplashedWallpaper()
+
     while True:
         sleep_time = interval/60
         if uw.check_network():
@@ -75,4 +102,27 @@ if __name__ == "__main__":
             uw.set_wallpaper()
             sleep_time = interval
         for _ in xrange(sleep_time):
+            if uw.should_change_now():
+                uw.reset_change_now()
+                break
             time.sleep(1)
+
+
+if __name__ == "__main__":
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+    builder = Gtk.Builder()
+    builder.add_from_file("unsplashed_menu.glade")
+    builder.connect_signals(MenuHandler())
+
+    indicator = AppIndicator3.Indicator.new(APPINDICATOR_ID, Gtk.STOCK_INFO, AppIndicator3.IndicatorCategory.SYSTEM_SERVICES)
+    indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
+    indicator.set_menu(builder.get_object("THE_MENU"))
+
+    uw = UnsplashedWallpaper()
+
+    thread = threading.Thread(target=unsplashed_thread)
+    thread.daemon = True
+    thread.start()
+
+    Gtk.main()
