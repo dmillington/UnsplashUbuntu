@@ -82,6 +82,11 @@ class MenuHandler:
     def menu_change_wallpaper(self, *args):
         uw.set_change_now()
 
+    def menu_about(self, *args):
+        about_dialog = builder.get_object("ABOUT_DIALOG")
+        about_dialog.run()
+        about_dialog.hide()
+
     def menu_quit(self, *args):
         Gtk.main_quit()
 
