@@ -15,6 +15,10 @@ from requests.exceptions import ConnectionError, Timeout
 curr_path = os.path.dirname(os.path.realpath(__file__))
 APPINDICATOR_ID = 'myappindicator'
 
+# Options Dialog global vars
+USE_LOCATION = False
+SEARCH_TERMS = "San Francisco"
+
 class UnsplashedWallpaper(object):
 
     def __init__(self):
@@ -87,6 +91,24 @@ class MenuHandler:
         about_dialog.run()
         about_dialog.hide()
 
+    def menu_options(self, *args):
+        options_dialog = builder.get_object("OPTIONS_DIALOG")
+        options_dialog.run()
+        options_dialog.hide()
+
+    def options_cancel_btn_clicked(self, *args):
+        options_dialog = builder.get_object("OPTIONS_DIALOG")
+        options_dialog.hide()
+
+    def options_save_btn_clicked(self, *args):
+        global SEARCH_TERMS
+        global USE_LOCATION
+        SEARCH_TERMS = builder.get_object("OPTIONS_SEARCH_TERMS").get_text()
+        USE_LOCATION = builder.get_object("OPTIONS_LOCATION_SWITCH").get_active()
+
+        options_dialog = builder.get_object("OPTIONS_DIALOG")
+        options_dialog.hide()
+
     def menu_quit(self, *args):
         Gtk.main_quit()
 
@@ -102,7 +124,10 @@ def unsplashed_thread():
         if uw.check_network():
             print "Getting new wallpaper..."
             uw.remove_wallpaper()
-            location = uw.get_location()
+            if USE_LOCATION:
+                location = uw.get_location()
+            else:
+                location = SEARCH_TERMS
             uw.get_wallpaper(location, screen_width, screen_height, write_to_file=True)
             uw.set_wallpaper()
             sleep_time = interval
