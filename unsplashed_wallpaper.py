@@ -9,7 +9,7 @@ import requests
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('AppIndicator3', '0.1')
-from gi.repository import Gtk, AppIndicator3
+from gi.repository import Gtk, AppIndicator3, GObject
 from requests.exceptions import ConnectionError, Timeout
 
 curr_path = os.path.dirname(os.path.realpath(__file__))
@@ -18,6 +18,8 @@ APPINDICATOR_ID = 'myappindicator'
 # Options Dialog global vars
 USE_LOCATION = False
 SEARCH_TERMS = "San Francisco"
+REFRESH_INT_LIST = [1800, 3600, 7200] # 30, 60, or 120 minutes
+REFRESH_INTERVAL = 1 # 3600 seconds by default
 
 class UnsplashedWallpaper(object):
 
@@ -103,8 +105,11 @@ class MenuHandler:
     def options_save_btn_clicked(self, *args):
         global SEARCH_TERMS
         global USE_LOCATION
+        global REFRESH_INTERVAL
+
         SEARCH_TERMS = builder.get_object("OPTIONS_SEARCH_TERMS").get_text()
         USE_LOCATION = builder.get_object("OPTIONS_LOCATION_SWITCH").get_active()
+        REFRESH_INTERVAL = builder.get_object("OPTIONS_WALLPAPER_INTERVAL_COMBOBOX").get_active()
 
         options_dialog = builder.get_object("OPTIONS_DIALOG")
         options_dialog.hide()
@@ -114,13 +119,11 @@ class MenuHandler:
 
 def unsplashed_thread():
     import Tkinter as tk
-    interval = 3600
     my_screen = tk.Tk()
     screen_width = my_screen.winfo_screenwidth()
     screen_height = my_screen.winfo_screenheight()
 
     while True:
-        sleep_time = interval/60
         if uw.check_network():
             print "Getting new wallpaper..."
             uw.remove_wallpaper()
@@ -130,8 +133,7 @@ def unsplashed_thread():
                 location = SEARCH_TERMS
             uw.get_wallpaper(location, screen_width, screen_height, write_to_file=True)
             uw.set_wallpaper()
-            sleep_time = interval
-        for _ in xrange(sleep_time):
+        for _ in xrange(REFRESH_INT_LIST[REFRESH_INTERVAL]):
             if uw.should_change_now():
                 uw.reset_change_now()
                 break
@@ -144,6 +146,19 @@ if __name__ == "__main__":
     builder = Gtk.Builder()
     builder.add_from_file("unsplashed_menu.glade")
     builder.connect_signals(MenuHandler())
+
+    list_store = Gtk.ListStore(GObject.TYPE_STRING)
+    list_store.append(("30 minutes",))
+    list_store.append(("1 hour",))
+    list_store.append(("2 hours",))
+
+    cell = Gtk.CellRendererText()
+
+    refresh_combobox = builder.get_object("OPTIONS_WALLPAPER_INTERVAL_COMBOBOX")
+    refresh_combobox.set_model(list_store)
+    refresh_combobox.pack_start(cell, True)
+    refresh_combobox.set_active(REFRESH_INTERVAL)
+    refresh_combobox.add_attribute(cell, "text", 0)
 
     indicator = AppIndicator3.Indicator.new(APPINDICATOR_ID, Gtk.STOCK_INFO, AppIndicator3.IndicatorCategory.SYSTEM_SERVICES)
     indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
