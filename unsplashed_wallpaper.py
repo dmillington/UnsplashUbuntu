@@ -6,6 +6,7 @@ import time
 import threading
 import signal
 import requests
+import ConfigParser
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('AppIndicator3', '0.1')
@@ -15,9 +16,11 @@ from requests.exceptions import ConnectionError, Timeout
 curr_path = os.path.dirname(os.path.realpath(__file__))
 APPINDICATOR_ID = 'myappindicator'
 
+CONFIG_FILE = os.path.expanduser('~/.config/unsplashed_wallpaper/config.conf')
+
 # Options Dialog global vars
 USE_LOCATION = False
-SEARCH_TERMS = "San Francisco"
+SEARCH_TERMS = 'San Francisco'
 REFRESH_INT_LIST = [1800, 3600, 7200] # 30, 60, or 120 minutes
 REFRESH_INTERVAL = 1 # 3600 seconds by default
 
@@ -111,11 +114,46 @@ class MenuHandler:
         USE_LOCATION = builder.get_object("OPTIONS_LOCATION_SWITCH").get_active()
         REFRESH_INTERVAL = builder.get_object("OPTIONS_WALLPAPER_INTERVAL_COMBOBOX").get_active()
 
+        save_config()
+
         options_dialog = builder.get_object("OPTIONS_DIALOG")
         options_dialog.hide()
 
     def menu_quit(self, *args):
         Gtk.main_quit()
+
+def load_config():
+    global SEARCH_TERMS
+    global USE_LOCATION
+    global REFRESH_INTERVAL
+
+    config = ConfigParser.RawConfigParser(
+        {'use_location': 'False',
+         'search_terms': 'San Francisco',
+         'refresh_interval': '1',
+        })
+    config.add_section('general')
+    config.read(CONFIG_FILE)
+    USE_LOCATION = config.getboolean('general', 'use_location')
+    SEARCH_TERMS = config.get('general', 'search_terms')
+    REFRESH_INTERVAL = config.getint('general', 'refresh_interval')
+
+def save_config():
+    global SEARCH_TERMS
+    global USE_LOCATION
+    global REFRESH_INTERVAL
+
+    config = ConfigParser.RawConfigParser()
+    config.add_section('general')
+    config.set('general', 'use_location', USE_LOCATION)
+    config.set('general', 'search_terms', SEARCH_TERMS)
+    config.set('general', 'refresh_interval', REFRESH_INTERVAL)
+
+    dirname = os.path.dirname(CONFIG_FILE)
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+    with open(CONFIG_FILE, 'wb+') as configfile:
+        config.write(configfile)
 
 def unsplashed_thread():
     import Tkinter as tk
@@ -143,9 +181,14 @@ def unsplashed_thread():
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
+    load_config()
+
     builder = Gtk.Builder()
     builder.add_from_file("unsplashed_menu.glade")
     builder.connect_signals(MenuHandler())
+
+    builder.get_object("OPTIONS_SEARCH_TERMS").set_text(SEARCH_TERMS)
+    builder.get_object("OPTIONS_LOCATION_SWITCH").set_active(USE_LOCATION)
 
     list_store = Gtk.ListStore(GObject.TYPE_STRING)
     list_store.append(("30 minutes",))
