@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 import sys
@@ -6,7 +6,7 @@ import time
 import threading
 import signal
 import requests
-import ConfigParser
+import configparser
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('AppIndicator3', '0.1')
@@ -56,14 +56,14 @@ class UnsplashedWallpaper(object):
 
             return None
         except:
-            print "Exception"
+            print("Failed to get wallpaper")
 
     def set_wallpaper(self):
         try:
             self.set_cmd = "gsettings set org.gnome.desktop.background picture-uri file:///" + self.cwd + "/" + self.file_name
             os.system(self.set_cmd)
         except:
-            print "Exception"
+            print("Failed to set wallpaper")
 
     def remove_wallpaper(self):
         self.file_path = self.cwd+"/"+self.file_name
@@ -127,7 +127,7 @@ def load_config():
     global USE_LOCATION
     global REFRESH_INTERVAL
 
-    config = ConfigParser.RawConfigParser(
+    config = configparser.RawConfigParser(
         {'use_location': 'False',
          'search_terms': 'San Francisco',
          'refresh_interval': '1',
@@ -143,7 +143,7 @@ def save_config():
     global USE_LOCATION
     global REFRESH_INTERVAL
 
-    config = ConfigParser.RawConfigParser()
+    config = configparser.RawConfigParser()
     config.add_section('general')
     config.set('general', 'use_location', USE_LOCATION)
     config.set('general', 'search_terms', SEARCH_TERMS)
@@ -152,18 +152,18 @@ def save_config():
     dirname = os.path.dirname(CONFIG_FILE)
     if not os.path.exists(dirname):
         os.makedirs(dirname)
-    with open(CONFIG_FILE, 'wb+') as configfile:
+    with open(CONFIG_FILE, 'w+') as configfile:
         config.write(configfile)
 
 def unsplashed_thread():
-    import Tkinter as tk
+    import tkinter as tk
     my_screen = tk.Tk()
     screen_width = my_screen.winfo_screenwidth()
     screen_height = my_screen.winfo_screenheight()
 
     while True:
         if uw.check_network():
-            print "Getting new wallpaper..."
+            print("Getting new wallpaper...")
             uw.remove_wallpaper()
             if USE_LOCATION:
                 location = uw.get_location()
@@ -171,7 +171,7 @@ def unsplashed_thread():
                 location = SEARCH_TERMS
             uw.get_wallpaper(location, screen_width, screen_height, write_to_file=True)
             uw.set_wallpaper()
-        for _ in xrange(REFRESH_INT_LIST[REFRESH_INTERVAL]):
+        for _ in range(REFRESH_INT_LIST[REFRESH_INTERVAL]):
             if uw.should_change_now():
                 uw.reset_change_now()
                 break
